@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>AI Chat</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial;
+    background: #0f172a;
+    color: white;
+}
+
+.container {
+    width: 700px;
+    margin: 0 auto;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    padding: 15px;
+    text-align: center;
+    font-size: 18px;
+    background: #111827;
+}
+
+.chat-box {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+}
+
+.msg {
+    margin: 10px 0;
+    display: flex;
+}
+
+.user {
+    justify-content: flex-end;
+}
+
+.ai {
+    justify-content: flex-start;
+}
+
+.bubble {
+    max-width: 70%;
+    padding: 10px 15px;
+    border-radius: 12px;
+    line-height: 1.4;
+}
+
+.user .bubble {
+    background: #3b82f6;
+}
+
+.ai .bubble {
+    background: #1f2937;
+}
+
+.input-box {
+    display: flex;
+    padding: 10px;
+    background: #111827;
+}
+
+input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+}
+
+button {
+    margin-left: 10px;
+    padding: 10px 15px;
+    background: #3b82f6;
+    border: none;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.typing {
+    font-size: 12px;
+    opacity: 0.6;
+    margin-left: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        🤖 AI Chat Assistant
+    </div>
+
+    <div id="chat" class="chat-box"></div>
+
+    <div class="input-box">
+        <input id="input" placeholder="输入消息..." onkeydown="handleKey(event)">
+        <button onclick="send()">发送</button>
+        <div id="status" class="typing"></div>
+    </div>
+
+</div>
+
+<script>
+
+const session_id = "user1";
+
+function handleKey(e) {
+    if (e.key === "Enter") send();
+}
+
+function addMsg(role, text) {
+    const chat = document.getElementById("chat");
+
+    const msg = document.createElement("div");
+    msg.className = "msg " + role;
+
+    const bubble = document.createElement("div");
+    bubble.className = "bubble";
+    bubble.innerText = text;
+
+    msg.appendChild(bubble);
+    chat.appendChild(msg);
+
+    chat.scrollTop = chat.scrollHeight;
+}
+
+function setStatus(text) {
+    document.getElementById("status").innerText = text;
+}
+
+async function send() {
+    const input = document.getElementById("input");
+    const text = input.value.trim();
+
+    if (!text) return;
+
+    addMsg("user", text);
+    input.value = "";
+
+    setStatus("AI正在输入...");
+
+    const res = await fetch("http://127.0.0.1:8000/chat", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            session_id: session_id,
+            message: text
+        })
+    });
+
+    const data = await res.json();
+
+    setStatus("");
+    addMsg("ai", data.reply);
+}
+
+</script>
+
+</body>
+</html>
