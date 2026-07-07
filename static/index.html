@@ -3,92 +3,311 @@
 <head>
 <meta charset="UTF-8">
 <title>AI Chat</title>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
 <style>
 body {
     margin: 0;
-    font-family: Arial;
-    background: #0f172a;
+    font-family:
+        "Inter",
+        "Microsoft YaHei",
+        Arial,
+        sans-serif;
+
+    background:
+        linear-gradient(
+            135deg,
+            #0f172a,
+            #1e293b
+        );
+
     color: white;
 }
+
 
 .container {
-    width: 700px;
-    margin: 0 auto;
+
+    width: 800px;
+    max-width: 95%;
+
+    margin: auto;
+
     height: 100vh;
+
     display: flex;
     flex-direction: column;
+
 }
+
+
+/* 顶部 */
 
 .header {
-    padding: 15px;
+
+    margin-top: 15px;
+
+    padding: 18px;
+
     text-align: center;
-    font-size: 18px;
-    background: #111827;
+
+    font-size: 22px;
+
+    font-weight: 700;
+
+
+    background:
+        rgba(255,255,255,0.08);
+
+
+    backdrop-filter:
+        blur(10px);
+
+
+    border-radius: 20px;
+
 }
+
+
+/* 聊天区域 */
 
 .chat-box {
-    flex: 1;
-    padding: 15px;
-    overflow-y: auto;
+
+    flex:1;
+
+    margin-top:15px;
+
+    padding:20px;
+
+
+    overflow-y:auto;
+
+
+    background:
+        rgba(255,255,255,0.06);
+
+
+    backdrop-filter:
+        blur(15px);
+
+
+    border-radius:20px;
+
 }
+
+
+/* 消息 */
 
 .msg {
-    margin: 10px 0;
-    display: flex;
+
+    display:flex;
+
+    margin:18px 0;
+
+    align-items:flex-start;
+
 }
+
+
+/* 用户右边 */
 
 .user {
-    justify-content: flex-end;
+
+    justify-content:flex-end;
+
 }
+
+
+/* AI左边 */
 
 .ai {
-    justify-content: flex-start;
+
+    justify-content:flex-start;
+
 }
+
+
+/* 气泡 */
 
 .bubble {
-    max-width: 70%;
-    padding: 10px 15px;
-    border-radius: 12px;
-    line-height: 1.4;
+
+
+    max-width:70%;
+
+
+    padding:14px 18px;
+
+
+    border-radius:18px;
+
+
+    line-height:1.6;
+
+
+    font-size:16px;
+
+
 }
+
+
+/* 用户气泡 */
 
 .user .bubble {
-    background: #3b82f6;
+
+
+    background:
+        linear-gradient(
+            135deg,
+            #2563eb,
+            #38bdf8
+        );
+
+
+    border-bottom-right-radius:5px;
+
 }
+
+
+
+/* AI气泡 */
 
 .ai .bubble {
-    background: #1f2937;
+
+
+    background:
+        rgba(255,255,255,0.12);
+
+
+    border-bottom-left-radius:5px;
+
 }
+
+
+
+/* 输入区域 */
 
 .input-box {
-    display: flex;
-    padding: 10px;
-    background: #111827;
+
+
+    display:flex;
+
+
+    margin-top:15px;
+
+
+    padding:15px;
+
+
+    background:
+        rgba(255,255,255,0.08);
+
+
+    backdrop-filter:
+        blur(10px);
+
+
+    border-radius:20px;
+
 }
+
+
 
 input {
-    flex: 1;
-    padding: 10px;
-    border-radius: 8px;
-    border: none;
-    outline: none;
+
+
+    flex:1;
+
+
+    padding:14px;
+
+
+    border:none;
+
+
+    outline:none;
+
+
+    border-radius:15px;
+
+
+    background:
+        rgba(255,255,255,0.15);
+
+
+    color:white;
+
+
+    font-size:16px;
+
 }
+
+
+
+input::placeholder{
+
+    color:#cbd5e1;
+
+}
+
+
 
 button {
-    margin-left: 10px;
-    padding: 10px 15px;
-    background: #3b82f6;
-    border: none;
-    color: white;
-    border-radius: 8px;
-    cursor: pointer;
+
+
+    margin-left:10px;
+
+
+    padding:0 25px;
+
+
+    border:none;
+
+
+    border-radius:15px;
+
+
+    background:
+        linear-gradient(
+            135deg,
+            #3b82f6,
+            #06b6d4
+        );
+
+
+    color:white;
+
+
+    font-size:16px;
+
+
+    cursor:pointer;
+
 }
 
-.typing {
-    font-size: 12px;
-    opacity: 0.6;
-    margin-left: 10px;
+
+
+button:hover{
+
+    transform:scale(1.05);
+
+}
+
+
+
+/* 滚动条 */
+
+.chat-box::-webkit-scrollbar{
+
+    width:8px;
+
+}
+
+
+.chat-box::-webkit-scrollbar-thumb{
+
+    background:#64748b;
+
+    border-radius:10px;
+
 }
 </style>
 </head>
@@ -98,7 +317,7 @@ button {
 <div class="container">
 
     <div class="header">
-        🤖 AI Chat Assistant
+        🐷 AI Chat 🐷
     </div>
 
     <div id="chat" class="chat-box"></div>
@@ -113,57 +332,157 @@ button {
 
 <script>
 
-const session_id = "user1";
+const session_id = "web_user";
+
+// 加载历史聊天记录
+
+async function loadHistory(){
+
+    const res = await fetch(
+        "http://127.0.0.1:8000/history/" + session_id
+    );
+
+
+    const history = await res.json();
+
+
+    for(const msg of history){
+
+        if(msg.role === "user"){
+
+            addMsg(
+                "user",
+                msg.content
+            );
+
+        }
+
+
+        if(msg.role === "assistant"){
+
+            addMsg(
+                "ai",
+                msg.content
+            );
+
+        }
+
+    }
+
+}
+
+
+// 创建WebSocket连接
+const ws = new WebSocket(
+    "ws://127.0.0.1:8000/ws"
+);
+
+
+let currentAI = null;
+
+
+// 接收AI流式回复
+ws.onmessage = function(event){
+
+    if(currentAI){
+        currentAI.innerText += event.data;
+    }
+
+};
+
+
+// 连接成功
+ws.onopen = function(){
+    console.log("WebSocket连接成功");
+};
+
+
+// 错误
+ws.onerror = function(error){
+    console.log("WebSocket错误", error);
+};
+
 
 function handleKey(e) {
     if (e.key === "Enter") send();
 }
 
+
 function addMsg(role, text) {
+
     const chat = document.getElementById("chat");
 
     const msg = document.createElement("div");
     msg.className = "msg " + role;
 
+
     const bubble = document.createElement("div");
     bubble.className = "bubble";
-    bubble.innerText = text;
+    const avatar = document.createElement("div");
+
+avatar.innerText =
+    role === "ai" ? "🐷" : "🙂";
+
+avatar.style.marginRight="10px";
+
+msg.appendChild(avatar);
+
+    if(role === "ai"){
+        
+        bubble.innerHTML = marked.parse(text);
+
+    }
+    else{
+        bubble.innerText = text;
+    }
 
     msg.appendChild(bubble);
     chat.appendChild(msg);
 
+
     chat.scrollTop = chat.scrollHeight;
+
+
+    return bubble;
 }
+
 
 function setStatus(text) {
     document.getElementById("status").innerText = text;
 }
 
-async function send() {
+
+
+function send() {
+
     const input = document.getElementById("input");
+
     const text = input.value.trim();
 
-    if (!text) return;
 
+    if(!text) return;
+
+
+    // 显示用户消息
     addMsg("user", text);
+
+
     input.value = "";
+
 
     setStatus("AI正在输入...");
 
-    const res = await fetch("http://127.0.0.1:8000/chat", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-            session_id: session_id,
-            message: text
-        })
-    });
 
-    const data = await res.json();
+    // 创建AI气泡
+    currentAI = addMsg("ai", "");
 
-    setStatus("");
-    addMsg("ai", data.reply);
+
+    // 发送给FastAPI
+    ws.send(text);
+
 }
+
+loadHistory();
 
 </script>
 
