@@ -325,12 +325,33 @@ button:hover{
     <div class="input-box">
         <input id="input" placeholder="输入消息..." onkeydown="handleKey(event)">
         <button onclick="send()">发送</button>
+        <button onclick="clearHistory()">清空聊天</button>
         <div id="status" class="typing"></div>
     </div>
 
 </div>
 
 <script>
+
+
+async function clearHistory(){
+
+    if(!confirm("确定要删除所有聊天记录吗？")){
+        return;
+    }
+
+    await fetch(
+        "http://127.0.0.1:8000/history/" + session_id,
+        {
+            method: "DELETE"
+        }
+    );
+
+    document.getElementById("chat").innerHTML = "";
+
+    alert("聊天记录已清空");
+}
+
 
 const session_id = "web_user";
 
