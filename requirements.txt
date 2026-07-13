@@ -1,0 +1,18 @@
+# Web框架
+fastapi
+uvicorn[standard]
+
+# HTTP请求
+requests
+
+# 数据库
+sqlalchemy
+
+# AI语音
+edge-tts
+
+# WebSocket
+websockets
+
+# 数据处理
+pydantic
