@@ -6,6 +6,7 @@ import json
 from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime
 from sqlalchemy.orm import declarative_base, sessionmaker
 from datetime import datetime
+from ai.tts import text_to_speech
 
 app = FastAPI()
 # ======================
@@ -75,10 +76,12 @@ Base.metadata.create_all(
 )
 
 
-@app.get("/")
-def home():
-    return {"message": "AI聊天系统已启动"}
+from fastapi.responses import FileResponse
 
+
+@app.get("/")
+def root():
+    return FileResponse("static/index.html")
 
 @app.post("/chat")
 def chat(req: ChatRequest):
@@ -122,7 +125,8 @@ def chat(req: ChatRequest):
 
     return {
         "session_id": req.session_id,
-        "reply": reply
+        "reply": reply,
+        "audio": "/static/audio/reply.mp3"
     }
 # ======================
 # 🚀 WebSocket 流式聊天
@@ -255,3 +259,23 @@ def get_history(session_id: str):
     db.close()
 
     return result
+
+
+
+@app.delete("/history/{session_id}")
+def delete_history(session_id: str):
+
+    db = SessionLocal()
+
+    db.query(Message).filter(
+        Message.session_id == session_id
+    ).delete()
+
+    db.commit()
+    db.close()
+
+    # 同时清空内存中的上下文
+    if session_id in chat_sessions:
+        del chat_sessions[session_id]
+
+    return {"message": "历史记录已删除"}
